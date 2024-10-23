@@ -1,32 +1,48 @@
-name: CICD
+name: CI
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      WORKING_DIR: add #change this to the rust project name you are developing.
+
     steps:
-      - uses: actions/checkout@v3
-      - name: install packages
-        run: make install
-      - name: Set up Environment Variables
-        run: |
-          echo "SERVER_HOSTNAME=${{ secrets.SERVER_HOSTNAME }}" >> $GITHUB_ENV
-          echo "HTTP_PATH=${{ secrets.HTTP_PATH }}" >> $GITHUB_ENV
-          echo "ACCESS_TOKEN=${{ secrets.PERSONAL_TOKEN }}" >> $GITHUB_ENV
-      - name: lint
-        run: make lint
-      - name: extract 
-        run: make extract 
-      - name: transform_load
-        run: make transform_load 
-      - name: query
-        run: make query
-      - name: test
-        run: make test
-      - name: format
-        run: make format
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Check
+      run: make check
+      working-directory: ${{ env.WORKING_DIR }}
+
+    - name: Format
+      run: make format
+      working-directory: ${{ env.WORKING_DIR }}
+
+    - name: Test
+      run: make test
+      working-directory: ${{ env.WORKING_DIR }}
+
+    - name: Release
+      run: make release
+      working-directory: ${{ env.WORKING_DIR }}
+
+    - name: Upload Binary Artifact
+      uses: actions/upload-artifact@v4 #v3 is scheduled for deprecation Nov 30 2024 check marketplace
+      with:
+        name: release-binary
+        path: ${{ env.WORKING_DIR }}/target/release/minigrep
