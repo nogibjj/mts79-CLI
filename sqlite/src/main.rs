@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use rusqlite::{Connection, Result};
-use mylib::{create_table, drop_table, load_data_from_csv, query_exec, update_table}; // import library logic
+use sqlite::{create_table, drop_table, load_data_from_csv, query_exec, update_table}; // import library logic
 
 // This struct defines the CLI arguments for the application
 #[derive(Parser, Debug)]
